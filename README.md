@@ -1,6 +1,6 @@
 # AI(IVR)
 
-A multi-modal AI bot that generates images based on spoken or written input. This is a Twilio serverless project that exposes functions to generate images and wait for a processing callback. Using the example Studio flow you can call in to a Twilio number and ask for the image to be generated, an MMS will be sent to you with the result. The same cab be done by starting the conversation via SMS.
+A multi-modal AI bot that generates images based on spoken or written input. This is a Twilio serverless project that exposes functions to generate images and wait for a processing callback. Using the example Studio flow you can call in to a Twilio number and ask for the image to be generated, an MMS will be sent to you with the result. The same can be done by starting the conversation via SMS.
 
 ![Crab holding a light saber](src/assets/crab.png)
 
