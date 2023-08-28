@@ -1,0 +1,271 @@
+{
+  "description": "A New Flow",
+  "states": [
+    {
+      "name": "Trigger",
+      "type": "trigger",
+      "transitions": [
+        {
+          "event": "incomingMessage"
+        },
+        {
+          "next": "gather_prompt",
+          "event": "incomingCall"
+        },
+        {
+          "next": "prompt_reply",
+          "event": "incomingConversationMessage"
+        },
+        {
+          "event": "incomingRequest"
+        },
+        {
+          "event": "incomingParent"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -390,
+          "y": 0
+        }
+      }
+    },
+    {
+      "name": "prompt_reply",
+      "type": "send-and-wait-for-reply",
+      "transitions": [
+        {
+          "next": "generate_image",
+          "event": "incomingMessage"
+        },
+        {
+          "event": "timeout"
+        },
+        {
+          "event": "deliveryFailure"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -50,
+          "y": 330
+        },
+        "service": "{{trigger.message.InstanceSid}}",
+        "channel": "{{trigger.message.ChannelSid}}",
+        "from": "{{flow.channel.address}}",
+        "body": "Yo! \n\nWelcome to the Twilio A*VR bot, I'm here for some fun I hope you are too.  \n\nUsing only a short sentence, ask me for something to generate. \n\nFor example you can say \"Photorealistic studio photo of Crab holding a light saber\".\n\nWhat do you want me to create?",
+        "timeout": "3600"
+      }
+    },
+    {
+      "name": "send_message_ok",
+      "type": "send-message",
+      "transitions": [
+        {
+          "event": "sent"
+        },
+        {
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 50,
+          "y": 1020
+        },
+        "service": "{{trigger.message.InstanceSid}}",
+        "channel": "{{trigger.message.ChannelSid}}",
+        "from": "{{flow.channel.address}}",
+        "to": "{{contact.channel.address}}",
+        "body": "Alright, I'm on it... Just a sec."
+      }
+    },
+    {
+      "name": "send_message_err",
+      "type": "send-message",
+      "transitions": [
+        {
+          "event": "sent"
+        },
+        {
+          "event": "failed"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": 470,
+          "y": 1010
+        },
+        "service": "{{trigger.message.InstanceSid}}",
+        "channel": "{{trigger.message.ChannelSid}}",
+        "from": "{{flow.channel.address}}",
+        "to": "{{contact.channel.address}}",
+        "body": "Mmmm.. Something went wrong. Please let Conno know about it."
+      }
+    },
+    {
+      "name": "generate_image",
+      "type": "run-function",
+      "transitions": [
+        {
+          "next": "send_message_ok",
+          "event": "success"
+        },
+        {
+          "next": "send_message_err",
+          "event": "fail"
+        }
+      ],
+      "properties": {
+        "service_sid": "",
+        "environment_sid": "",
+        "offset": {
+          "x": 230,
+          "y": 660
+        },
+        "function_sid": "ZH4251f2704cde124bec8abe81c1023cdd",
+        "parameters": [
+          {
+            "value": "{{trigger.conversation.From}}",
+            "key": "to"
+          },
+          {
+            "value": "{{widgets.prompt_reply.inbound.Body}}",
+            "key": "prompt"
+          },
+          {
+            "value": "{{trigger.conversation.MessagingServiceSid}}",
+            "key": "mssid"
+          }
+        ],
+        "url": "https://XXXXXXXX.twil.io/api/image/generate"
+      }
+    },
+    {
+      "name": "gather_prompt",
+      "type": "gather-input-on-call",
+      "transitions": [
+        {
+          "next": "gather_prompt",
+          "event": "keypress"
+        },
+        {
+          "next": "play_prompt",
+          "event": "speech"
+        },
+        {
+          "next": "gather_prompt",
+          "event": "timeout"
+        }
+      ],
+      "properties": {
+        "speech_timeout": "auto",
+        "offset": {
+          "x": -930,
+          "y": 370
+        },
+        "loop": 1,
+        "finish_on_key": "#",
+        "say": "Yo! \n\nWelcome to the Twilio A I V R bot, I'm here for some fun I hope you are too.  \nUsing only a short sentence, ask me for something to generate. \n\nFor example you can say \"Photorealistic studio photo of Crab holding a light saber\".\n\nWhat do you want me to create?",
+        "stop_gather": true,
+        "gather_language": "en",
+        "profanity_filter": "true",
+        "timeout": 5
+      }
+    },
+    {
+      "name": "play_prompt",
+      "type": "say-play",
+      "transitions": [
+        {
+          "next": "generate_image_voice",
+          "event": "audioComplete"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -950,
+          "y": 720
+        },
+        "loop": 1,
+        "say": "I heard {{widgets.gather_prompt.SpeechResult}}"
+      }
+    },
+    {
+      "name": "say_bye_ok",
+      "type": "say-play",
+      "transitions": [
+        {
+          "event": "audioComplete"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -1160,
+          "y": 1400
+        },
+        "loop": 1,
+        "say": "Alright, I'm on it... Just a sec. I'll send you a text. Thanks for playing"
+      }
+    },
+    {
+      "name": "generate_image_voice",
+      "type": "run-function",
+      "transitions": [
+        {
+          "next": "say_bye_ok",
+          "event": "success"
+        },
+        {
+          "next": "say_bye_err",
+          "event": "fail"
+        }
+      ],
+      "properties": {
+        "service_sid": "",
+        "environment_sid": "",
+        "offset": {
+          "x": -950,
+          "y": 1040
+        },
+        "function_sid": "ZH4251f2704cde124bec8abe81c1023cdd",
+        "parameters": [
+          {
+            "value": "{{trigger.call.From}}",
+            "key": "to"
+          },
+          {
+            "value": "{{widgets.gather_prompt.SpeechResult}}",
+            "key": "prompt"
+          },
+          {
+            "value": "{{trigger.call.To}}",
+            "key": "from"
+          }
+        ],
+        "url": "https://XXXXXXXXXX.twil.io/api/image/generate"
+      }
+    },
+    {
+      "name": "say_bye_err",
+      "type": "say-play",
+      "transitions": [
+        {
+          "event": "audioComplete"
+        }
+      ],
+      "properties": {
+        "offset": {
+          "x": -780,
+          "y": 1410
+        },
+        "loop": 1,
+        "say": "Mmmm.. Something went wrong. Please let Conno know about it.. Thanks for playing"
+      }
+    }
+  ],
+  "initial_state": "Trigger",
+  "flags": {
+    "allow_concurrent_calls": true
+  }
+}
